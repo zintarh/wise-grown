@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import WoodButton from "./WoodButton";
+import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import WoodButton from './WoodButton';
 import { useSoundContext } from "./SoundProvider";
 
 const samplePlates = [
@@ -30,10 +30,9 @@ const samplePlates = [
 
 export default function AncestralPlateDecoderSection() {
   const [selected, setSelected] = useState<number | null>(null);
-  const [beads, setBeads] = useState(0);
-  const [uploaded, setUploaded] = useState<string | null>(null);
   const [isDecoding, setIsDecoding] = useState(false);
-  const [decodedRoots, setDecodedRoots] = useState<any[]>([]);
+  const [decodedRoots, setDecodedRoots] = useState<{name: string; description: string; benefits: string[]}[]>([]);
+  const beads = 0; // Keep for future use
   const { playClickSound, playHoverSound, playSuccessSound } = useSoundContext();
 
   function handleDecode(idx: number) {
@@ -42,7 +41,7 @@ export default function AncestralPlateDecoderSection() {
     setIsDecoding(true);
     
     setTimeout(() => {
-      setDecodedRoots(samplePlates[idx].roots);
+      setDecodedRoots(samplePlates[idx].roots.map(root => ({name: root.label, description: root.info, benefits: []})));
       setIsDecoding(false);
       playSuccessSound(); // Play success sound when decoding completes
     }, 3000);
@@ -52,20 +51,6 @@ export default function AncestralPlateDecoderSection() {
     playHoverSound();
   };
 
-  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files.length > 0) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      setUploaded(url);
-      setSelected(null);
-      setBeads(beads + 1);
-    }
-  }
-
-  const uploadedRoots = [
-    { glyph: "/images/glyph-millet.png", label: "Millet", info: "Grounding, rich in fiber." },
-    { glyph: "/images/glyph-greens.png", label: "Greens", info: "High in nutrients." },
-    { glyph: "/images/glyph-egusi.png", label: "Egusi", info: "Energizing seeds." },
-  ];
 
   return (
     <section className="relative py-16 sm:py-24 lg:py-32 bg-gradient-to-b from-[#F8E5D0] to-[#FDF6EC] overflow-x-hidden" id="plate-decoder">

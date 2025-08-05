@@ -14,7 +14,7 @@ export const useSound = () => {
   useEffect(() => {
     const initAudioContext = () => {
       if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext || (window as Window & typeof globalThis & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       }
     };
 
@@ -91,14 +91,24 @@ export const useSound = () => {
     }
   }, []);
 
-  // Cleanup on unmount
+  // Cleanup function
   useEffect(() => {
+    const sounds = soundsRef.current; // Store the current value in a variable
+    const audioContext = audioContextRef.current; // Store the current value in a variable
+
     return () => {
-      soundsRef.current.forEach(audio => {
-        audio.pause();
-        audio.src = '';
+      // Clean up all audio elements
+      sounds.forEach(sound => {
+        sound.pause();
+        sound.src = '';
+        sound.load();
       });
-      soundsRef.current.clear();
+      sounds.clear();
+
+      // Close audio context
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
     };
   }, []);
 

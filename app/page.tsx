@@ -5,7 +5,6 @@ import AncestralPlateDecoderSection from "./components/AncestralPlateDecoderSect
 import JourneyMapSection from "./components/JourneyMapSection";
 import SankofaFooter from "./components/SankofaFooter";
 import { SoundProvider } from "./components/SoundProvider";
-import { SoundToggle } from "./components/SoundToggle";
 
 export default function Home() {
   return (

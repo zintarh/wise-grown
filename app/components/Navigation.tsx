@@ -47,7 +47,7 @@ const Navigation = () => {
                   scale: 1.1,
                   color: "#ffffff",
                 }}
-                className="text-[#7C4D1E] hover:text-[#EFAF42] text-lg font-semibold transition-all duration-300 relative group drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]"
+                className="text-[#7C4D1E] hover:text-[#EFAF42] text-lg font-semibold transition-all duration-300 relative group drop-shadow-lg"
               >
                 {item.name}
                 <motion.div 

@@ -4,18 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const BackgroundMusic = () => {
-  const [isMuted, setIsMuted] = useState(false); // Start unmuted - we'll try to autoplay
+  const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [volume] = useState(0.1);
   const [autoplayAttempted, setAutoplayAttempted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [autoplay] = useState(true);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     // Set audio properties
-    audio.volume = 0.1;
+    audio.volume = volume;
     audio.loop = true;
     audio.preload = "auto";
 
@@ -77,11 +79,9 @@ const BackgroundMusic = () => {
     const checkAudioReady = () => {
       if (audio.readyState >= 3) {
         setIsLoaded(true);
-        attemptAutoplay();
       } else if (audio.readyState >= 2) {
         console.log("Audio has current data");
         setIsLoaded(true);
-        attemptAutoplay();
       } else {
         console.log("Audio readyState:", audio.readyState);
         // Force load if not ready
@@ -93,6 +93,34 @@ const BackgroundMusic = () => {
     checkAudioReady();
     const timeoutId = setTimeout(checkAudioReady, 100);
 
+    // Handle autoplay when component mounts
+    if (autoplay && !isMuted) {
+      const attemptAutoplay = () => {
+        if (audioRef.current) {
+          const playPromise = audioRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.warn('Autoplay prevented:', error);
+              setAutoplayAttempted(true);
+            });
+          }
+        }
+      };
+
+      // Try to play immediately
+      attemptAutoplay();
+
+      // Set up retry mechanism if first attempt fails
+      const retryTimer = setTimeout(() => {
+        if (audioRef.current?.paused && !isMuted) {
+          attemptAutoplay();
+        }
+      }, 1000);
+
+      return () => clearTimeout(retryTimer);
+    }
+
     // Cleanup
     return () => {
       clearTimeout(timeoutId);
@@ -102,7 +130,7 @@ const BackgroundMusic = () => {
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("error", handleError);
     };
-  }, []);
+  }, [autoplay, isMuted, setAutoplayAttempted]);
 
   const toggleMute = async () => {
     const audio = audioRef.current;
